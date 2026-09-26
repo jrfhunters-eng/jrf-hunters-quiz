@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JRF Hunters | UGC NET Paper 1 Mega Quiz</title>
+    <style>
+        :root {
+            --primary-color: #003366;
+            --secondary-color: #ff9900;
+            --bg-color: #f4f7f6;
+            --text-color: #333;
+            --correct-color: #28a745;
+            --wrong-color: #dc3545;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+        .container {
+            background: white;
+            width: 100%;
+            max-width: 700px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 30px;
+            text-align: center;
+            margin-top: 20px;
+            margin-bottom: 20px;
+        }
+        h1 { color: var(--primary-color); margin-bottom: 5px; }
+        .subtitle { color: #666; font-size: 14px; margin-bottom: 25px; }
+        input[type="text"] {
+            width: 80%; padding: 10px; margin: 15px 0; border: 1px solid #ccc;
+            border-radius: 5px; font-size: 16px;
+        }
+        button {
+            background-color: var(--primary-color); color: white; border: none;
+            padding: 12px 25px; font-size: 16px; border-radius: 5px;
+            cursor: pointer; transition: 0.3s; margin: 5px;
+        }
+        button:hover { background-color: #002244; }
+        .secondary-btn { background-color: var(--secondary-color); color: #000; font-weight: bold; }
+        .secondary-btn:hover { background-color: #e68a00; }
+        .hidden { display: none; }
+        .question-text { font-size: 18px; font-weight: bold; margin-bottom: 20px; text-align: left; }
+        .passage-text { font-size: 14px; background: #e9ecef; padding: 10px; text-align: left; margin-bottom: 15px; border-radius: 5px; border-left: 4px solid var(--primary-color); }
+        .options-container { display: flex; flex-direction: column; gap: 10px; }
+        .option-btn { background-color: #f9f9f9; color: #333; border: 1px solid #ddd; text-align: left; padding: 12px; }
+        .option-btn:hover { background-color: #e9ecef; }
+        .option-btn.selected { background-color: var(--secondary-color); color: white; border-color: var(--secondary-color); }
+        .nav-buttons { margin-top: 20px; display: flex; justify-content: flex-end; }
+        
+        /* Analysis Screen Styles */
+        #analysis-container { text-align: left; max-height: 60vh; overflow-y: auto; padding-right: 10px; }
+        .analysis-card { background: #fdfdfd; border: 1px solid #ddd; border-radius: 5px; padding: 15px; margin-bottom: 15px; }
+        .analysis-q-title { font-weight: bold; margin-bottom: 10px; }
+        .analysis-response { margin: 5px 0; font-size: 14px; }
+        .analysis-rationale { background: #eef5fa; padding: 10px; border-left: 3px solid var(--primary-color); font-size: 14px; margin-top: 10px; }
+        .text-green { color: var(--correct-color); font-weight: bold; }
+        .text-red { color: var(--wrong-color); font-weight: bold; }
+    </style>
+</head>
+<body>
+
+    <div class="container" id="enroll-screen">
+        <h1>JRF Hunters</h1>
+        <div class="subtitle">Mega Quiz: 50 Questions (Environment & Higher Ed)</div>
+        <p>Enter your name to begin the assessment. Complete analysis provided at the end.</p>
+        <input type="text" id="student-name" placeholder="Enter your full name" required>
+        <br>
+        <button onclick="startQuiz()">Start Assessment</button>
+    </div>
+
+    <div class="container hidden" id="quiz-screen">
+        <h1>JRF Hunters</h1>
+        <div class="subtitle" id="question-tracker">Question 1 of 50</div>
+        <div id="passage-container" class="passage-text hidden"></div>
+        <div class="question-text" id="question-text">Question goes here</div>
+        <div class="options-container" id="options-container"></div>
+        <div class="nav-buttons">
+            <button onclick="nextQuestion()" id="next-btn">Next</button>
+        </div>
+    </div>
+
+    <div class="container hidden" id="result-screen">
+        <h1>JRF Hunters</h1>
+        <h2>Performance Analysis</h2>
+        <p>Student Name: <strong id="display-name"></strong></p>
+        <h1 style="color: var(--secondary-color); font-size: 40px; margin: 10px 0;">
+            <span id="final-score">0</span> / 50
+        </h1>
+        <p id="feedback-text" style="font-weight: bold; margin-bottom: 20px;"></p>
+        
+        <button class="secondary-btn" onclick="showAnalysis()">Review Solutions & Analysis</button>
+        <button onclick="location.reload()">Attempt Again</button>
+        
+        <div style="margin-top: 30px; font-size: 14px; color: #666;">
+            Join our community on Telegram: <strong>t.me/jrfhunters</strong><br>
+            Subscribe on YouTube: <strong>@AMITMEHRADU</strong>
+        </div>
+    </div>
+
+    <div class="container hidden" id="analysis-screen">
+        <h1>Solutions & Analysis</h1>
+        <div class="subtitle">Review your mistakes and learn the concepts.</div>
+        <div id="analysis-container">
+            </div>
+        <button onclick="location.reload()" style="margin-top: 20px;">Return to Start</button>
+    </div>
+
+    <script>
+        const quizData = [
+            { q: "How many goals were included in the Millennium Development Goals (MDGs)?", opts: ["8", "17", "21", "40"], ans: 0, rat: "The MDGs consisted of exactly 8 goals established in 2000." },
+            { q: "By which year were the Millennium Development Goals (MDGs) to be achieved?", opts: ["2000", "2015", "2030", "2050"], ans: 1, rat: "The MDGs had a 15-year timeline from 2000 to 2015." },
+            { q: "How many Sustainable Development Goals (SDGs) are there in the 2030 Agenda?", opts: ["8", "12", "17", "21"], ans: 2, rat: "There are 17 global SDGs that succeeded the MDGs." },
+            { q: "What is the primary focus of Sustainable Development Goal (SDG) 1?", opts: ["Quality Education", "No Poverty", "Zero Hunger", "Climate Action"], ans: 1, rat: "SDG 1 aims to eradicate extreme poverty in all forms." },
+            { q: "Which Sustainable Development Goal is dedicated to 'Quality Education'?", opts: ["SDG 2", "SDG 4", "SDG 6", "SDG 10"], ans: 1, rat: "SDG 4 focuses on inclusive and equitable quality education." },
+            { q: "What does the 'e' in e-waste stand for?", opts: ["Environmental", "Ecological", "Electronic", "Energy"], ans: 2, rat: "E-waste refers specifically to discarded Electronic waste." },
+            { q: "Which of the following is an example of a primary air pollutant?", opts: ["Ozone (O3)", "Carbon Monoxide (CO)", "Sulfuric Acid (H2SO4)", "Peroxyacetyl Nitrate (PAN)"], ans: 1, rat: "CO is emitted directly from sources like vehicles, making it primary." },
+            { q: "PYQ TRAP: Ground-level Ozone is classified as what type of pollutant?", opts: ["Primary Pollutant", "Secondary Pollutant", "Tertiary Pollutant", "Water Pollutant"], ans: 1, rat: "Ozone is formed by chemical reactions (NOx + VOCs + Sunlight), so it is a secondary pollutant." },
+            { q: "Which disease is caused by industrial wastewater containing Mercury bioaccumulating in fish?", opts: ["Itai-Itai", "Minamata Disease", "Blue Baby Syndrome", "Black-foot Disease"], ans: 1, rat: "Minamata disease is strongly linked to mercury poisoning (Mnemonic: Mini Mercury)." },
+            { q: "Cadmium pollution in water causes which of the following diseases?", opts: ["Minamata", "Itai-Itai (Ouch-Ouch)", "Cholera", "Typhoid"], ans: 1, rat: "Itai-Itai is caused by Cadmium exposure (Mnemonic: Itchy Cadmium)." },
+            { q: "Blue Baby Syndrome is primarily caused by which pollutant in groundwater?", opts: ["Mercury", "Arsenic", "Nitrates", "Lead"], ans: 2, rat: "Agricultural fertilizer runoff leads to nitrate pollution, causing Blue Baby Syndrome." },
+            { q: "What is the primary effect of water pollution caused specifically by industrial and domestic sewage?", opts: ["Acid rain", "Smog", "Eutrophication", "Ozone depletion"], ans: 2, rat: "The influx of nutrients from sewage directly causes excessive algal growth known as Eutrophication." },
+            { q: "Which international agreement set legally binding targets for developed nations to reduce Greenhouse Gases (GHGs)?", opts: ["Montreal Protocol", "Kyoto Protocol", "Kigali Amendment", "Stockholm Convention"], ans: 1, rat: "Kyoto focused on reducing Carbon/GHGs with legally binding top-down targets." },
+            { q: "Where are the headquarters of the International Solar Alliance (ISA) located?", opts: ["Paris, France", "Geneva, Switzerland", "Gurugram, India", "New York, USA"], ans: 2, rat: "ISA is the first major international organization headquartered in Gurugram, India." },
+            { q: "The Kigali Amendment is an amendment to which protocol?", opts: ["Kyoto Protocol", "Montreal Protocol", "Paris Agreement", "Cartagena Protocol"], ans: 1, rat: "It amended Montreal to phase down HFCs, even though HFCs are greenhouse gases." },
+            { q: "Which greenhouse gas has the lowest Global Warming Potential (GWP) serving as the baseline (GWP = 1)?", opts: ["Methane (CH4)", "Nitrous Oxide (N2O)", "Carbon Dioxide (CO2)", "Sulfur Hexafluoride (SF6)"], ans: 2, rat: "CO2 is the baseline with a GWP of exactly 1." },
+            { q: "In ancient India, informal education was imparted at which of the following places?", opts: ["Universities like Nalanda", "Buddhist Viharas", "Gurukulas only", "Home, temples, Pathshalas, and Tols"], ans: 3, rat: "Informal learning occurred in community settings like temples and Tols." },
+            { q: "What was the formal initiation ceremony marking a student's transition to a Guru's mentorship called?", opts: ["Upanayana", "Shruti", "Chintan", "Sravana"], ans: 0, rat: "Upanayana was the admission rite meaning 'bringing near' the guru." },
+            { q: "Which pedagogical method refers to the precise phonetic repetition and memorization of texts?", opts: ["Manana", "Shruti", "Nididhyasana", "Chintan"], ans: 1, rat: "Shruti means 'that which is heard' and involves oral recitation." },
+            { q: "Which ancient university is globally recognized as the first university, established around the 7th century BCE?", opts: ["Nalanda", "Taxila (Takshashila)", "Valabhi", "Vikramshila"], ans: 1, rat: "Taxila is the oldest, famous for medicine and statecraft." },
+            { q: "What was a unique feature of the ancient Taxila University regarding examinations?", opts: ["Strict written exams every year", "Only royals were allowed to take exams", "No formal examination system or degrees awarded", "Exams were conducted by the King"], ans: 2, rat: "Students graduated based solely on the teacher's assessment." },
+            { q: "Which ancient university was closely linked with Mahayana Buddhism and visited by Hiuen Tsang?", opts: ["Taxila", "Valabhi", "Nalanda", "Vikramshila"], ans: 2, rat: "Nalanda housed roughly 10,000 monks and was a Mahayana center." },
+            { q: "Valabhi University, located in Western India, was highly renowned for which type of subjects?", opts: ["Only Vedic rituals", "Secular subjects like Economics and Ethics", "Military warfare only", "Foreign languages"], ans: 1, rat: "Valabhi was famous for practical, secular subjects like Arthasastra and Niti Shastra." },
+            { q: "Which ancient university was established by Emperor Dharampala of the Pal dynasty on the banks of the Ganges?", opts: ["Taxila", "Nalanda", "Vikramshila", "Valabhi"], ans: 2, rat: "Vikramshila was established in the 8th century by the Pal dynasty." },
+            { q: "Who acts as the Visitor for Central Universities in India?", opts: ["Prime Minister", "Chief Justice", "President of India", "Minister of Education"], ans: 2, rat: "The President acts as the Visitor with supreme oversight." },
+            { q: "PYQ TRAP: Which of the following is NOT a function of Higher Education Regulators like the UGC?", opts: ["Permission to grant degrees", "Disbursement of public funds", "Quality benchmarking", "Selection of teaching faculty"], ans: 3, rat: "Faculty selection is done by individual university selection committees, not UGC." },
+            { q: "Which central university uniquely has the Prime Minister of India as its Chancellor?", opts: ["Delhi University", "Jawaharlal Nehru University (JNU)", "Visva-Bharati University", "Banaras Hindu University (BHU)"], ans: 2, rat: "Visva-Bharati is the well-known exception where the PM is Chancellor." },
+            { q: "On which day is World Environment Day celebrated?", opts: ["April 22", "June 5", "September 16", "December 1"], ans: 1, rat: "Established in 1972 at the Stockholm Conference." },
+            { q: "What is the primary difference between the Kyoto Protocol and the Paris Agreement regarding country targets?", opts: ["Kyoto was voluntary; Paris is binding.", "Kyoto dictated targets top-down; Paris uses self-determined bottom-up targets.", "Kyoto focused on solar; Paris focuses on wind.", "There is no difference in how targets are set."], ans: 1, rat: "Paris relies on Nationally Determined Contributions (NDCs) set by each country." },
+            { q: "According to ancient Indian education, what was the primary language used as the medium of instruction?", opts: ["Pali", "Prakrit", "Sanskrit", "Hindi"], ans: 2, rat: "Sanskrit was the primary language of formal instruction in Gurukulas." },
+            { q: "What does 'Ecotone' refer to in environmental studies?", opts: ["A purely aquatic environment", "The transition zone between two different ecosystems", "A polluted city", "The ozone layer"], ans: 1, rat: "Ecotones (like wetlands) are junctions connecting ecosystems." },
+            { q: "SDG 13 focuses specifically on which global issue?", opts: ["Life Below Water", "Climate Action", "Peace and Justice", "Clean Energy"], ans: 1, rat: "SDG 13 is strictly dedicated to Climate Action." },
+            { q: "In the administrative structure of a university, who acts as the custodian of records and the Administrative Chief?", opts: ["Chancellor", "Finance Officer", "Registrar", "Dean of Students"], ans: 2, rat: "The Registrar is the administrative backbone and record keeper." },
+            { q: "Which of the following describes 'Carrying Capacity' in ecology?", opts: ["Weight an animal can carry", "The maximum population an environment can sustain indefinitely", "Total water in an ecosystem", "Rate of pollution generated"], ans: 1, rat: "It represents the environmental limit for species population growth." },
+            { q: "Which ancient scholar, known for his work in medicine, was an alumnus of Taxila?", opts: ["Panini", "Kautilya", "Charaka", "Hiuen Tsang"], ans: 2, rat: "Charaka is famous for foundational Ayurvedic medicine texts." },
+            { q: "What is the motto of the International Solar Alliance (ISA)?", opts: ["Save Energy, Save Earth", "One Sun, One World, One Grid", "Solar for All", "Harnessing the Sun"], ans: 1, rat: "OSOWOG emphasizes global solar grid connectivity." },
+            { q: "Which component of the Biosphere refers to land and soil?", opts: ["Atmosphere", "Hydrosphere", "Lithosphere", "Stratosphere"], ans: 2, rat: "The lithosphere encompasses the solid earth." },
+            { q: "Which platform provides an open-access digital repository of Indian PhD theses?", opts: ["SWAYAM", "Shodhganga", "ShodhShuddhi", "NPTEL"], ans: 1, rat: "Shodhganga is the primary repository for completed theses." },
+            { q: "Under the ancient Tripartite Process, what does 'Manana' involve?", opts: ["Listening to the guru", "Analyzing, reasoning, and processing lessons independently", "Internalizing truth", "Writing down texts"], ans: 1, rat: "Manana is the mental processing and logical reflection of knowledge." },
+            { q: "Which of the following is true regarding Deforestation and Carbon Dioxide?", opts: ["Deforestation decreases CO2", "Deforestation has no impact", "Deforestation increases CO2 because forests act as carbon sinks", "Deforestation only affects oxygen"], ans: 2, rat: "Trees absorb CO2; removing them leaves more CO2 in the atmosphere." },
+            { q: "PYQ TRAP: Which of the following is NOT an anthropogenic activity?", opts: ["Industrial manufacturing", "Fossil fuel burning", "Natural forest fires caused by lightning", "Agricultural runoff"], ans: 2, rat: "Anthropogenic means human-caused. Lightning fires are natural." },
+            { q: "Which digital initiative acts as a plagiarism detection service utilizing Drillbit software?", opts: ["Shodhganga", "Shodh Gangotri", "ShodhShuddhi", "Shodh Chakra"], ans: 2, rat: "ShodhShuddhi ensures academic purity via plagiarism checks." },
+            { q: "What does 'Brahmacharya' refer to in the context of the Gurukula system?", opts: ["Physical exercise", "Celibacy and strict self-discipline", "Graduation ceremony", "Donation to the Guru"], ans: 1, rat: "It was a mandatory code of discipline for resident students." },
+            { q: "Which ancient Indian literature is considered secondary canonical literature?", opts: ["The four primary Vedas", "Foreign traveler accounts", "The Upanishads, Smritis, and Puranas", "Buddhist Jataka tales"], ans: 2, rat: "These texts expanded upon the core Vedic philosophy." },
+            { q: "The Malaviya Mission Teacher Training Centre (MMTTC) is focused on what core objective?", opts: ["Building primary schools", "Faculty development and building pedagogical excellence", "Providing scholarships", "Printing textbooks"], ans: 1, rat: "Launched by UGC to train higher education faculty in modern pedagogy." },
+            // Comprehension Section
+            { passage: "READING COMPREHENSION PASSAGE:\nEnvironmental issues are categorized by scale. Local issues are confined to a specific geographic area where both the impact and solution are localized. Regional issues cross local boundaries, affecting multi-state river basins or climatic zones. Global issues impact the entire planetary ecosystem and require international cooperation.", q: "Based on the passage, a localized chemical spill from a factory is an example of which scale?", opts: ["Global Issue", "Regional Issue", "Local Issue", "Universal Issue"], ans: 2, rat: "The impact and solution remain confined to the specific factory area." },
+            { passage: "READING COMPREHENSION PASSAGE:\nEnvironmental issues are categorized by scale. Local issues are confined to a specific geographic area where both the impact and solution are localized. Regional issues cross local boundaries, affecting multi-state river basins or climatic zones. Global issues impact the entire planetary ecosystem and require international cooperation.", q: "Based on the passage, Acid Rain, where sulfur dioxide travels hundreds of miles downwind, is classified as a:", opts: ["Local Issue", "Regional Issue", "Global Issue", "Micro Issue"], ans: 1, rat: "It crosses local boundaries affecting broader multi-state zones." },
+            { passage: "READING COMPREHENSION PASSAGE:\nEnvironmental issues are categorized by scale. Local issues are confined to a specific geographic area where both the impact and solution are localized. Regional issues cross local boundaries, affecting multi-state river basins or climatic zones. Global issues impact the entire planetary ecosystem and require international cooperation.", q: "Based on the passage, which type of issue requires international treaties to mitigate?", opts: ["Local Issues", "Regional Issues", "Global Issues", "Individual Issues"], ans: 2, rat: "The passage explicitly states global issues require international cooperation." },
+            { passage: "READING COMPREHENSION PASSAGE:\nEnvironmental issues are categorized by scale. Local issues are confined to a specific geographic area where both the impact and solution are localized. Regional issues cross local boundaries, affecting multi-state river basins or climatic zones. Global issues impact the entire planetary ecosystem and require international cooperation.", q: "Based on the passage, Stratospheric Ozone Depletion would be categorized as:", opts: ["Local Issue", "Regional Issue", "Global Issue", "National Issue"], ans: 2, rat: "Ozone depletion impacts the entire planetary ecosystem." },
+            { passage: "READING COMPREHENSION PASSAGE:\nEnvironmental issues are categorized by scale. Local issues are confined to a specific geographic area where both the impact and solution are localized. Regional issues cross local boundaries, affecting multi-state river basins or climatic zones. Global issues impact the entire planetary ecosystem and require international cooperation.", q: "Based on the passage, pollution of a multi-state river like the Ganga is best described as:", opts: ["Local Issue", "Regional Issue", "Global Issue", "Cosmic Issue"], ans: 1, rat: "It spans across multiple states, fitting the definition of a regional issue." }
+        ];
+
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let studentName = "";
+        let selectedOptionIndex = null;
+        let userAnswers = [];
+
+        function startQuiz() {
+            const nameInput = document.getElementById('student-name').value;
+            if (nameInput.trim() === "") { alert("Please enter your name."); return; }
+            studentName = nameInput;
+            document.getElementById('enroll-screen').classList.add('hidden');
+            document.getElementById('quiz-screen').classList.remove('hidden');
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            selectedOptionIndex = null;
+            const currentQ = quizData[currentQuestionIndex];
+            
+            document.getElementById('question-tracker').innerText = `Question ${currentQuestionIndex + 1} of ${quizData.length}`;
+            
+            // Handle Comprehension Passage
+            const passageDiv = document.getElementById('passage-container');
+            if (currentQ.passage) {
+                passageDiv.innerText = currentQ.passage;
+                passageDiv.classList.remove('hidden');
+            } else {
+                passageDiv.classList.add('hidden');
+            }
+
+            document.getElementById('question-text').innerText = currentQ.q;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = "";
+            
+            currentQ.opts.forEach((option, index) => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.innerText = option;
+                btn.onclick = () => selectOption(index, btn);
+                optionsContainer.appendChild(btn);
+            });
+
+            const nextBtn = document.getElementById('next-btn');
+            nextBtn.innerText = currentQuestionIndex === quizData.length - 1 ? "Submit Quiz" : "Next";
+        }
+
+        function selectOption(index, btnElement) {
+            selectedOptionIndex = index;
+            const options = document.querySelectorAll('.option-btn');
+            options.forEach(opt => opt.classList.remove('selected'));
+            btnElement.classList.add('selected');
+        }
+
+        function nextQuestion() {
+            if (selectedOptionIndex === null) { alert("Please select an answer."); return; }
+            
+            // Record answer for analysis
+            userAnswers.push(selectedOptionIndex);
+            
+            if (selectedOptionIndex === quizData[currentQuestionIndex].ans) { score++; }
+            currentQuestionIndex++;
+
+            if (currentQuestionIndex < quizData.length) { loadQuestion(); } 
+            else { showResults(); }
+        }
+
+        function showResults() {
+            document.getElementById('quiz-screen').classList.add('hidden');
+            document.getElementById('result-screen').classList.remove('hidden');
+            
+            document.getElementById('display-name').innerText = studentName;
+            document.getElementById('final-score').innerText = score;
+
+            let feedback = "";
+            let percentage = (score / quizData.length) * 100;
+            if (percentage >= 80) feedback = "Excellent! You are definitely ready for the JRF.";
+            else if (percentage >= 50) feedback = "Good effort, but review the explanations to fix conceptual gaps.";
+            else feedback = "Time to revise the notes. Focus on the PYQ traps!";
+            document.getElementById('feedback-text').innerText = feedback;
+        }
+
+        function showAnalysis() {
+            document.getElementById('result-screen').classList.add('hidden');
+            document.getElementById('analysis-screen').classList.remove('hidden');
+            
+            const container = document.getElementById('analysis-container');
+            container.innerHTML = "";
+
+            quizData.forEach((q, index) => {
+                const userAnswerIdx = userAnswers[index];
+                const isCorrect = userAnswerIdx === q.ans;
+                
+                const card = document.createElement('div');
+                card.className = 'analysis-card';
+                
+                card.innerHTML = `
+                    <div class="analysis-q-title">Q${index + 1}: ${q.q}</div>
+                    <div class="analysis-response">
+                        Your Answer: <span class="${isCorrect ? 'text-green' : 'text-red'}">
+                            ${q.opts[userAnswerIdx]} ${isCorrect ? ' (Correct)' : ' (Incorrect)'}
+                        </span>
+                    </div>
+                    ${!isCorrect ? `<div class="analysis-response">Correct Answer: <span class="text-green">${q.opts[q.ans]}</span></div>` : ''}
+                    <div class="analysis-rationale"><strong>Analysis:</strong> ${q.rat}</div>
+                `;
+                container.appendChild(card);
+            });
+        }
+    </script>
+</body>
+</html>
