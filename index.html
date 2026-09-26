@@ -58,7 +58,6 @@
         .option-btn.selected { background-color: var(--secondary-color); color: white; border-color: var(--secondary-color); }
         .nav-buttons { margin-top: 20px; display: flex; justify-content: flex-end; }
         
-        /* Analysis Screen Styles */
         #analysis-container { text-align: left; max-height: 60vh; overflow-y: auto; padding-right: 10px; }
         .analysis-card { background: #fdfdfd; border: 1px solid #ddd; border-radius: 5px; padding: 15px; margin-bottom: 15px; }
         .analysis-q-title { font-weight: bold; margin-bottom: 10px; }
@@ -111,8 +110,7 @@
     <div class="container hidden" id="analysis-screen">
         <h1>Solutions & Analysis</h1>
         <div class="subtitle">Review your mistakes and learn the concepts.</div>
-        <div id="analysis-container">
-            </div>
+        <div id="analysis-container"></div>
         <button onclick="location.reload()" style="margin-top: 20px;">Return to Start</button>
     </div>
 
@@ -163,7 +161,6 @@
             { q: "What does 'Brahmacharya' refer to in the context of the Gurukula system?", opts: ["Physical exercise", "Celibacy and strict self-discipline", "Graduation ceremony", "Donation to the Guru"], ans: 1, rat: "It was a mandatory code of discipline for resident students." },
             { q: "Which ancient Indian literature is considered secondary canonical literature?", opts: ["The four primary Vedas", "Foreign traveler accounts", "The Upanishads, Smritis, and Puranas", "Buddhist Jataka tales"], ans: 2, rat: "These texts expanded upon the core Vedic philosophy." },
             { q: "The Malaviya Mission Teacher Training Centre (MMTTC) is focused on what core objective?", opts: ["Building primary schools", "Faculty development and building pedagogical excellence", "Providing scholarships", "Printing textbooks"], ans: 1, rat: "Launched by UGC to train higher education faculty in modern pedagogy." },
-            // Comprehension Section
             { passage: "READING COMPREHENSION PASSAGE:\nEnvironmental issues are categorized by scale. Local issues are confined to a specific geographic area where both the impact and solution are localized. Regional issues cross local boundaries, affecting multi-state river basins or climatic zones. Global issues impact the entire planetary ecosystem and require international cooperation.", q: "Based on the passage, a localized chemical spill from a factory is an example of which scale?", opts: ["Global Issue", "Regional Issue", "Local Issue", "Universal Issue"], ans: 2, rat: "The impact and solution remain confined to the specific factory area." },
             { passage: "READING COMPREHENSION PASSAGE:\nEnvironmental issues are categorized by scale. Local issues are confined to a specific geographic area where both the impact and solution are localized. Regional issues cross local boundaries, affecting multi-state river basins or climatic zones. Global issues impact the entire planetary ecosystem and require international cooperation.", q: "Based on the passage, Acid Rain, where sulfur dioxide travels hundreds of miles downwind, is classified as a:", opts: ["Local Issue", "Regional Issue", "Global Issue", "Micro Issue"], ans: 1, rat: "It crosses local boundaries affecting broader multi-state zones." },
             { passage: "READING COMPREHENSION PASSAGE:\nEnvironmental issues are categorized by scale. Local issues are confined to a specific geographic area where both the impact and solution are localized. Regional issues cross local boundaries, affecting multi-state river basins or climatic zones. Global issues impact the entire planetary ecosystem and require international cooperation.", q: "Based on the passage, which type of issue requires international treaties to mitigate?", opts: ["Local Issues", "Regional Issues", "Global Issues", "Individual Issues"], ans: 2, rat: "The passage explicitly states global issues require international cooperation." },
@@ -192,7 +189,6 @@
             
             document.getElementById('question-tracker').innerText = `Question ${currentQuestionIndex + 1} of ${quizData.length}`;
             
-            // Handle Comprehension Passage
             const passageDiv = document.getElementById('passage-container');
             if (currentQ.passage) {
                 passageDiv.innerText = currentQ.passage;
@@ -228,7 +224,6 @@
         function nextQuestion() {
             if (selectedOptionIndex === null) { alert("Please select an answer."); return; }
             
-            // Record answer for analysis
             userAnswers.push(selectedOptionIndex);
             
             if (selectedOptionIndex === quizData[currentQuestionIndex].ans) { score++; }
