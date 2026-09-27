@@ -55,10 +55,11 @@
         
         /* Dashboard Styles */
         .dashboard-table { width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 20px; }
-        .dashboard-table th, .dashboard-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        .dashboard-table th, .dashboard-table td { border: 1px solid #ddd; padding: 12px; text-align: left; }
         .dashboard-table th { background-color: var(--primary-color); color: white; }
         .dashboard-table tr:nth-child(even) { background-color: #f2f2f2; }
-        .empty-dash { color: #666; font-style: italic; margin: 20px 0; }
+        .empty-dash { color: #666; font-style: italic; margin: 20px 0; background: #eee; padding: 15px; border-radius: 5px;}
+        .local-warning { font-size: 12px; color: #888; margin-top: 10px; font-style: italic; }
 
         /* Quiz Styles */
         .question-text { font-size: 18px; font-weight: bold; margin-bottom: 20px; text-align: left; }
@@ -88,7 +89,9 @@
         
         <button class="secondary-btn" onclick="showEnrollScreen()" style="font-size: 18px; padding: 15px 30px;">Start New Assessment</button>
         
-        <h3 style="margin-top: 30px; text-align: left; color: var(--primary-color);">Your Past Performance</h3>
+        <h3 style="margin-top: 30px; text-align: left; color: var(--primary-color);">Candidate Leaderboard & History</h3>
+        <p style="text-align: left; font-size: 14px; color: #555;">All test submissions and candidate names are saved securely on this website interface.</p>
+        
         <div id="dashboard-content">
             </div>
         
@@ -100,11 +103,11 @@
 
     <div class="container hidden" id="enroll-screen">
         <h1>JRF Hunters</h1>
-        <div class="subtitle">Enter Details</div>
-        <p>Enter your name to begin the 50-question assessment. Your marks will be saved to your dashboard.</p>
+        <div class="subtitle">Candidate Registration</div>
+        <p>Enter your name to begin the 50-question assessment. You can submit early at any point during the test. Your name and marks will be recorded in the dashboard.</p>
         <input type="text" id="student-name" placeholder="Enter your full name" required>
         <br>
-        <button onclick="startQuiz()">Begin Quiz</button>
+        <button onclick="startQuiz()">Begin Assessment</button>
         <button class="secondary-btn" onclick="initDashboard()" style="margin-top:10px;">Back to Dashboard</button>
     </div>
 
@@ -115,13 +118,13 @@
         <div class="question-text" id="question-text">Question goes here</div>
         <div class="options-container" id="options-container"></div>
         <div class="nav-buttons">
-            <button onclick="confirmSubmit()" class="danger-btn" id="submit-btn">Submit Assessment</button>
+            <button onclick="confirmSubmit()" class="danger-btn" id="submit-btn" title="Click to submit test early">Submit Early</button>
             <button onclick="nextQuestion()" id="next-btn">Next Question</button>
         </div>
     </div>
 
     <div class="container hidden" id="result-screen">
-        <h1>Assessment Complete</h1>
+        <h1>Assessment Submitted</h1>
         <h2>Performance Summary</h2>
         <p>Candidate: <strong id="display-name"></strong></p>
         <h1 style="color: var(--secondary-color); font-size: 45px; margin: 10px 0;">
@@ -135,7 +138,7 @@
 
     <div class="container hidden" id="analysis-screen">
         <h1>Solutions & Analysis</h1>
-        <div class="subtitle">Review your mistakes and learn the concepts.</div>
+        <div class="subtitle">Review your responses, skipped questions, and learn the concepts.</div>
         <div id="analysis-container"></div>
         <button onclick="initDashboard()" style="margin-top: 20px;">Return to Dashboard</button>
     </div>
@@ -211,20 +214,20 @@
             hideAllScreens();
             document.getElementById('dashboard-screen').classList.remove('hidden');
             
-            // Fetch saved results from local storage
+            // Fetch saved results from local storage (the "website database")
             const savedData = JSON.parse(localStorage.getItem('jrfHuntersResults')) || [];
             const dashContent = document.getElementById('dashboard-content');
             
             if (savedData.length === 0) {
-                dashContent.innerHTML = "<div class='empty-dash'>No previous attempts found. Start a new assessment to see your marks here!</div>";
+                dashContent.innerHTML = "<div class='empty-dash'>No candidate data found yet. Start an assessment to see your name and marks saved here!</div>";
             } else {
                 let tableHTML = `
                     <table class="dashboard-table">
                         <tr>
                             <th>Date & Time</th>
-                            <th>Name</th>
+                            <th>Candidate Name</th>
                             <th>Score</th>
-                            <th>Percentage</th>
+                            <th>Status</th>
                         </tr>
                 `;
                 
@@ -234,9 +237,9 @@
                     tableHTML += `
                         <tr>
                             <td>${attempt.date}</td>
-                            <td>${attempt.name}</td>
-                            <td><strong>${attempt.score} / 50</strong></td>
-                            <td>${percent}%</td>
+                            <td><strong>${attempt.name}</strong></td>
+                            <td><strong>${attempt.score} / 50</strong> (${percent}%)</td>
+                            <td><span style="color: green;">Saved</span></td>
                         </tr>
                     `;
                 });
@@ -259,7 +262,7 @@
             currentQuestionIndex = 0;
             score = 0;
             
-            // Initialize answers array with nulls in case they submit early
+            // Initialize answers array with nulls to track skipped/unanswered questions
             userAnswers = new Array(quizData.length).fill(null);
             
             hideAllScreens();
@@ -294,9 +297,17 @@
                 optionsContainer.appendChild(btn);
             });
 
-            // Adjust "Next" button text if it's the last question
+            // If it's the last question, hide the "Next" button and rely only on Submit
             const nextBtn = document.getElementById('next-btn');
-            nextBtn.innerText = currentQuestionIndex === quizData.length - 1 ? "Submit Assessment" : "Next Question";
+            const submitBtn = document.getElementById('submit-btn');
+            
+            if (currentQuestionIndex === quizData.length - 1) {
+                nextBtn.classList.add('hidden');
+                submitBtn.innerText = "Submit Final Test";
+            } else {
+                nextBtn.classList.remove('hidden');
+                submitBtn.innerText = "Submit Early";
+            }
         }
 
         function selectOption(index, btnElement) {
@@ -308,7 +319,7 @@
 
         function nextQuestion() {
             if (selectedOptionIndex === null) { 
-                alert("Please select an answer to proceed."); 
+                alert("Please select an answer to proceed, or click 'Submit Early' if you wish to end the test now."); 
                 return; 
             }
             
@@ -327,17 +338,21 @@
 
         function confirmSubmit() {
             // Check if they are on the last question anyway
-            if (currentQuestionIndex === quizData.length - 1 && selectedOptionIndex !== null) {
-                nextQuestion(); // Just process it as a normal finish
+            if (currentQuestionIndex === quizData.length - 1) {
+                if (selectedOptionIndex !== null) {
+                    userAnswers[currentQuestionIndex] = selectedOptionIndex;
+                    if (selectedOptionIndex === quizData[currentQuestionIndex].ans) { score++; }
+                }
+                finishQuiz();
                 return;
             }
             
             // Otherwise, prompt for early submission
             const remaining = quizData.length - currentQuestionIndex;
-            const msg = `You have ${remaining} questions remaining. Are you sure you want to submit your assessment now? Unanswered questions will be scored as incorrect.`;
+            const msg = `You have ${remaining} questions remaining. Are you sure you want to submit your assessment early? All unanswered questions will be marked as skipped/incorrect.`;
             
             if (confirm(msg)) {
-                // Save current answer if they selected one before hitting submit
+                // Save current answer if they selected one before hitting submit early
                 if (selectedOptionIndex !== null) {
                     userAnswers[currentQuestionIndex] = selectedOptionIndex;
                     if (selectedOptionIndex === quizData[currentQuestionIndex].ans) { score++; }
@@ -347,7 +362,7 @@
         }
 
         function finishQuiz() {
-            // Save to Local Storage
+            // Save Candidate Data to Local Storage (Website's database)
             const previousData = JSON.parse(localStorage.getItem('jrfHuntersResults')) || [];
             
             // Format date nicely
