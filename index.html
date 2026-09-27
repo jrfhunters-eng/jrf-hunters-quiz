@@ -49,6 +49,8 @@
         button:hover { background-color: #002244; }
         .secondary-btn { background-color: var(--secondary-color); color: #000; }
         .secondary-btn:hover { background-color: #e68a00; }
+        .danger-btn { background-color: #dc3545; color: white; }
+        .danger-btn:hover { background-color: #c82333; }
         .hidden { display: none; }
         
         /* Dashboard Styles */
@@ -65,7 +67,7 @@
         .option-btn { background-color: #f9f9f9; color: #333; border: 1px solid #ddd; text-align: left; padding: 12px; font-weight: normal; }
         .option-btn:hover { background-color: #e9ecef; }
         .option-btn.selected { background-color: var(--secondary-color); color: white; border-color: var(--secondary-color); }
-        .nav-buttons { margin-top: 20px; display: flex; justify-content: flex-end; }
+        .nav-buttons { margin-top: 20px; display: flex; justify-content: space-between; align-items: center; }
         
         /* Analysis Screen Styles */
         #analysis-container { text-align: left; max-height: 60vh; overflow-y: auto; padding-right: 10px; }
@@ -75,6 +77,7 @@
         .analysis-rationale { background: #eef5fa; padding: 10px; border-left: 3px solid var(--primary-color); font-size: 14px; margin-top: 10px; }
         .text-green { color: var(--correct-color); font-weight: bold; }
         .text-red { color: var(--wrong-color); font-weight: bold; }
+        .text-gray { color: #6c757d; font-style: italic; }
     </style>
 </head>
 <body>
@@ -112,7 +115,8 @@
         <div class="question-text" id="question-text">Question goes here</div>
         <div class="options-container" id="options-container"></div>
         <div class="nav-buttons">
-            <button onclick="nextQuestion()" id="next-btn">Next</button>
+            <button onclick="confirmSubmit()" class="danger-btn" id="submit-btn">Submit Assessment</button>
+            <button onclick="nextQuestion()" id="next-btn">Next Question</button>
         </div>
     </div>
 
@@ -254,7 +258,9 @@
             studentName = nameInput;
             currentQuestionIndex = 0;
             score = 0;
-            userAnswers = [];
+            
+            // Initialize answers array with nulls in case they submit early
+            userAnswers = new Array(quizData.length).fill(null);
             
             hideAllScreens();
             document.getElementById('quiz-screen').classList.remove('hidden');
@@ -288,8 +294,9 @@
                 optionsContainer.appendChild(btn);
             });
 
+            // Adjust "Next" button text if it's the last question
             const nextBtn = document.getElementById('next-btn');
-            nextBtn.innerText = currentQuestionIndex === quizData.length - 1 ? "Submit Quiz" : "Next";
+            nextBtn.innerText = currentQuestionIndex === quizData.length - 1 ? "Submit Assessment" : "Next Question";
         }
 
         function selectOption(index, btnElement) {
@@ -300,16 +307,42 @@
         }
 
         function nextQuestion() {
-            if (selectedOptionIndex === null) { alert("Please select an answer to proceed."); return; }
+            if (selectedOptionIndex === null) { 
+                alert("Please select an answer to proceed."); 
+                return; 
+            }
             
-            userAnswers.push(selectedOptionIndex);
+            // Record answer and update score
+            userAnswers[currentQuestionIndex] = selectedOptionIndex;
             if (selectedOptionIndex === quizData[currentQuestionIndex].ans) { score++; }
             
             currentQuestionIndex++;
+            
             if (currentQuestionIndex < quizData.length) { 
                 loadQuestion(); 
             } else { 
                 finishQuiz(); 
+            }
+        }
+
+        function confirmSubmit() {
+            // Check if they are on the last question anyway
+            if (currentQuestionIndex === quizData.length - 1 && selectedOptionIndex !== null) {
+                nextQuestion(); // Just process it as a normal finish
+                return;
+            }
+            
+            // Otherwise, prompt for early submission
+            const remaining = quizData.length - currentQuestionIndex;
+            const msg = `You have ${remaining} questions remaining. Are you sure you want to submit your assessment now? Unanswered questions will be scored as incorrect.`;
+            
+            if (confirm(msg)) {
+                // Save current answer if they selected one before hitting submit
+                if (selectedOptionIndex !== null) {
+                    userAnswers[currentQuestionIndex] = selectedOptionIndex;
+                    if (selectedOptionIndex === quizData[currentQuestionIndex].ans) { score++; }
+                }
+                finishQuiz();
             }
         }
 
@@ -354,17 +387,27 @@
 
             quizData.forEach((q, index) => {
                 const userAnswerIdx = userAnswers[index];
-                const isCorrect = userAnswerIdx === q.ans;
                 
+                // Handle skipped questions from early submit
+                const isSkipped = userAnswerIdx === null || userAnswerIdx === undefined;
+                const isCorrect = !isSkipped && (userAnswerIdx === q.ans);
+                
+                let answerDisplay = "";
+                if (isSkipped) {
+                    answerDisplay = `<span class="text-gray">Skipped (No Answer Provided)</span>`;
+                } else {
+                    answerDisplay = `<span class="${isCorrect ? 'text-green' : 'text-red'}">
+                        ${q.opts[userAnswerIdx]} ${isCorrect ? ' (Correct)' : ' (Incorrect)'}
+                    </span>`;
+                }
+
                 const card = document.createElement('div');
                 card.className = 'analysis-card';
                 
                 card.innerHTML = `
                     <div class="analysis-q-title">Q${index + 1}: ${q.q}</div>
                     <div class="analysis-response">
-                        Your Answer: <span class="${isCorrect ? 'text-green' : 'text-red'}">
-                            ${q.opts[userAnswerIdx]} ${isCorrect ? ' (Correct)' : ' (Incorrect)'}
-                        </span>
+                        Your Answer: ${answerDisplay}
                     </div>
                     ${!isCorrect ? `<div class="analysis-response">Correct Answer: <span class="text-green">${q.opts[q.ans]}</span></div>` : ''}
                     <div class="analysis-rationale"><strong>Analysis:</strong> ${q.rat}</div>
