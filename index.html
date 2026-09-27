@@ -27,7 +27,7 @@
         .container {
             background: white;
             width: 100%;
-            max-width: 700px;
+            max-width: 750px;
             border-radius: 10px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
             padding: 30px;
@@ -44,20 +44,30 @@
         button {
             background-color: var(--primary-color); color: white; border: none;
             padding: 12px 25px; font-size: 16px; border-radius: 5px;
-            cursor: pointer; transition: 0.3s; margin: 5px;
+            cursor: pointer; transition: 0.3s; margin: 5px; font-weight: bold;
         }
         button:hover { background-color: #002244; }
-        .secondary-btn { background-color: var(--secondary-color); color: #000; font-weight: bold; }
+        .secondary-btn { background-color: var(--secondary-color); color: #000; }
         .secondary-btn:hover { background-color: #e68a00; }
         .hidden { display: none; }
+        
+        /* Dashboard Styles */
+        .dashboard-table { width: 100%; border-collapse: collapse; margin-top: 20px; margin-bottom: 20px; }
+        .dashboard-table th, .dashboard-table td { border: 1px solid #ddd; padding: 10px; text-align: left; }
+        .dashboard-table th { background-color: var(--primary-color); color: white; }
+        .dashboard-table tr:nth-child(even) { background-color: #f2f2f2; }
+        .empty-dash { color: #666; font-style: italic; margin: 20px 0; }
+
+        /* Quiz Styles */
         .question-text { font-size: 18px; font-weight: bold; margin-bottom: 20px; text-align: left; }
         .passage-text { font-size: 14px; background: #e9ecef; padding: 10px; text-align: left; margin-bottom: 15px; border-radius: 5px; border-left: 4px solid var(--primary-color); }
         .options-container { display: flex; flex-direction: column; gap: 10px; }
-        .option-btn { background-color: #f9f9f9; color: #333; border: 1px solid #ddd; text-align: left; padding: 12px; }
+        .option-btn { background-color: #f9f9f9; color: #333; border: 1px solid #ddd; text-align: left; padding: 12px; font-weight: normal; }
         .option-btn:hover { background-color: #e9ecef; }
         .option-btn.selected { background-color: var(--secondary-color); color: white; border-color: var(--secondary-color); }
         .nav-buttons { margin-top: 20px; display: flex; justify-content: flex-end; }
         
+        /* Analysis Screen Styles */
         #analysis-container { text-align: left; max-height: 60vh; overflow-y: auto; padding-right: 10px; }
         .analysis-card { background: #fdfdfd; border: 1px solid #ddd; border-radius: 5px; padding: 15px; margin-bottom: 15px; }
         .analysis-q-title { font-weight: bold; margin-bottom: 10px; }
@@ -69,13 +79,30 @@
 </head>
 <body>
 
-    <div class="container" id="enroll-screen">
+    <div class="container" id="dashboard-screen">
+        <h1>JRF Hunters Dashboard</h1>
+        <div class="subtitle">UGC NET Paper 1 Mega Assessment</div>
+        
+        <button class="secondary-btn" onclick="showEnrollScreen()" style="font-size: 18px; padding: 15px 30px;">Start New Assessment</button>
+        
+        <h3 style="margin-top: 30px; text-align: left; color: var(--primary-color);">Your Past Performance</h3>
+        <div id="dashboard-content">
+            </div>
+        
+        <div style="margin-top: 30px; font-size: 14px; color: #666; text-align: center;">
+            Join our community on Telegram: <strong>t.me/jrfhunters</strong><br>
+            Subscribe on YouTube: <strong>@AMITMEHRADU</strong>
+        </div>
+    </div>
+
+    <div class="container hidden" id="enroll-screen">
         <h1>JRF Hunters</h1>
-        <div class="subtitle">Mega Quiz: 50 Questions (Environment & Higher Ed)</div>
-        <p>Enter your name to begin the assessment. Complete analysis provided at the end.</p>
+        <div class="subtitle">Enter Details</div>
+        <p>Enter your name to begin the 50-question assessment. Your marks will be saved to your dashboard.</p>
         <input type="text" id="student-name" placeholder="Enter your full name" required>
         <br>
-        <button onclick="startQuiz()">Start Assessment</button>
+        <button onclick="startQuiz()">Begin Quiz</button>
+        <button class="secondary-btn" onclick="initDashboard()" style="margin-top:10px;">Back to Dashboard</button>
     </div>
 
     <div class="container hidden" id="quiz-screen">
@@ -90,28 +117,23 @@
     </div>
 
     <div class="container hidden" id="result-screen">
-        <h1>JRF Hunters</h1>
-        <h2>Performance Analysis</h2>
-        <p>Student Name: <strong id="display-name"></strong></p>
-        <h1 style="color: var(--secondary-color); font-size: 40px; margin: 10px 0;">
+        <h1>Assessment Complete</h1>
+        <h2>Performance Summary</h2>
+        <p>Candidate: <strong id="display-name"></strong></p>
+        <h1 style="color: var(--secondary-color); font-size: 45px; margin: 10px 0;">
             <span id="final-score">0</span> / 50
         </h1>
-        <p id="feedback-text" style="font-weight: bold; margin-bottom: 20px;"></p>
+        <p id="feedback-text" style="font-weight: bold; margin-bottom: 25px;"></p>
         
         <button class="secondary-btn" onclick="showAnalysis()">Review Solutions & Analysis</button>
-        <button onclick="location.reload()">Attempt Again</button>
-        
-        <div style="margin-top: 30px; font-size: 14px; color: #666;">
-            Join our community on Telegram: <strong>t.me/jrfhunters</strong><br>
-            Subscribe on YouTube: <strong>@AMITMEHRADU</strong>
-        </div>
+        <button onclick="initDashboard()">Return to Dashboard</button>
     </div>
 
     <div class="container hidden" id="analysis-screen">
         <h1>Solutions & Analysis</h1>
         <div class="subtitle">Review your mistakes and learn the concepts.</div>
         <div id="analysis-container"></div>
-        <button onclick="location.reload()" style="margin-top: 20px;">Return to Start</button>
+        <button onclick="initDashboard()" style="margin-top: 20px;">Return to Dashboard</button>
     </div>
 
     <script>
@@ -174,11 +196,67 @@
         let selectedOptionIndex = null;
         let userAnswers = [];
 
+        // Hide all screens
+        function hideAllScreens() {
+            const screens = ['dashboard-screen', 'enroll-screen', 'quiz-screen', 'result-screen', 'analysis-screen'];
+            screens.forEach(id => document.getElementById(id).classList.add('hidden'));
+        }
+
+        // Initialize Dashboard on Load
+        function initDashboard() {
+            hideAllScreens();
+            document.getElementById('dashboard-screen').classList.remove('hidden');
+            
+            // Fetch saved results from local storage
+            const savedData = JSON.parse(localStorage.getItem('jrfHuntersResults')) || [];
+            const dashContent = document.getElementById('dashboard-content');
+            
+            if (savedData.length === 0) {
+                dashContent.innerHTML = "<div class='empty-dash'>No previous attempts found. Start a new assessment to see your marks here!</div>";
+            } else {
+                let tableHTML = `
+                    <table class="dashboard-table">
+                        <tr>
+                            <th>Date & Time</th>
+                            <th>Name</th>
+                            <th>Score</th>
+                            <th>Percentage</th>
+                        </tr>
+                `;
+                
+                // Reverse to show newest first
+                savedData.slice().reverse().forEach(attempt => {
+                    let percent = ((attempt.score / 50) * 100).toFixed(1);
+                    tableHTML += `
+                        <tr>
+                            <td>${attempt.date}</td>
+                            <td>${attempt.name}</td>
+                            <td><strong>${attempt.score} / 50</strong></td>
+                            <td>${percent}%</td>
+                        </tr>
+                    `;
+                });
+                tableHTML += "</table>";
+                dashContent.innerHTML = tableHTML;
+            }
+        }
+
+        function showEnrollScreen() {
+            hideAllScreens();
+            document.getElementById('enroll-screen').classList.remove('hidden');
+            document.getElementById('student-name').value = ""; // clear previous
+        }
+
         function startQuiz() {
             const nameInput = document.getElementById('student-name').value;
-            if (nameInput.trim() === "") { alert("Please enter your name."); return; }
+            if (nameInput.trim() === "") { alert("Please enter your name to proceed."); return; }
+            
             studentName = nameInput;
-            document.getElementById('enroll-screen').classList.add('hidden');
+            currentQuestionIndex = 0;
+            score = 0;
+            userAnswers = [];
+            
+            hideAllScreens();
             document.getElementById('quiz-screen').classList.remove('hidden');
             loadQuestion();
         }
@@ -222,19 +300,38 @@
         }
 
         function nextQuestion() {
-            if (selectedOptionIndex === null) { alert("Please select an answer."); return; }
+            if (selectedOptionIndex === null) { alert("Please select an answer to proceed."); return; }
             
             userAnswers.push(selectedOptionIndex);
-            
             if (selectedOptionIndex === quizData[currentQuestionIndex].ans) { score++; }
+            
             currentQuestionIndex++;
-
-            if (currentQuestionIndex < quizData.length) { loadQuestion(); } 
-            else { showResults(); }
+            if (currentQuestionIndex < quizData.length) { 
+                loadQuestion(); 
+            } else { 
+                finishQuiz(); 
+            }
         }
 
-        function showResults() {
-            document.getElementById('quiz-screen').classList.add('hidden');
+        function finishQuiz() {
+            // Save to Local Storage
+            const previousData = JSON.parse(localStorage.getItem('jrfHuntersResults')) || [];
+            
+            // Format date nicely
+            const now = new Date();
+            const dateString = now.toLocaleDateString() + " " + now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+            
+            const attemptData = {
+                name: studentName,
+                score: score,
+                date: dateString
+            };
+            
+            previousData.push(attemptData);
+            localStorage.setItem('jrfHuntersResults', JSON.stringify(previousData));
+
+            // Show results
+            hideAllScreens();
             document.getElementById('result-screen').classList.remove('hidden');
             
             document.getElementById('display-name').innerText = studentName;
@@ -249,7 +346,7 @@
         }
 
         function showAnalysis() {
-            document.getElementById('result-screen').classList.add('hidden');
+            hideAllScreens();
             document.getElementById('analysis-screen').classList.remove('hidden');
             
             const container = document.getElementById('analysis-container');
@@ -275,6 +372,10 @@
                 container.appendChild(card);
             });
         }
+
+        // Boot up application
+        window.onload = initDashboard;
+
     </script>
 </body>
 </html>
